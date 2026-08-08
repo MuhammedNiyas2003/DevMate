@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import com.devmate.common.response.ApiResponse;
 
 import java.util.List;
 import java.util.UUID;
@@ -20,23 +21,24 @@ public class UserController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public UserResponse create(@Valid @RequestBody UserRequest request) {
-        return userService.create(request);
+    public ApiResponse<UserResponse> create(@Valid @RequestBody UserRequest request) {
+        return ApiResponse.success("User created successfully", userService.create(request));
     }
 
     @GetMapping
-    public List<UserResponse> getAll() {
-        return userService.getAll();
+    public ApiResponse<List<UserResponse>> getAll() {
+        return ApiResponse.success("Users fetched successfully", userService.getAll());
     }
 
     @GetMapping("/{id}")
-    public UserResponse getById(@PathVariable UUID id) {
-        return userService.getById(id);
+    public ApiResponse<UserResponse> getById(@PathVariable UUID id) {
+        return ApiResponse.success("User fetched successfully", userService.getById(id));
     }
 
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable UUID id) {
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<Void> delete(@PathVariable UUID id) {
         userService.delete(id);
+        return ApiResponse.success("User deleted successfully", null);
     }
 }
