@@ -1,4 +1,7 @@
 spring:
+  application:
+    name: backend-java
+
   datasource:
     url: jdbc:postgresql://localhost:5432/devmate
     username: postgres
@@ -12,5 +15,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        jdbc:
-          time_zone: UTC
+
+jwt:
+  secret: mySuperSecretKeyForDevMateJwtTokenGeneration123456789
+  expiration: 86400000
