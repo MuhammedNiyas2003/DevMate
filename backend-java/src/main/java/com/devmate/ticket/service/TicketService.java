@@ -5,8 +5,12 @@ import com.devmate.department.entity.Department;
 import com.devmate.department.repository.DepartmentRepository;
 import com.devmate.ticket.dto.TicketRequest;
 import com.devmate.ticket.dto.TicketResponse;
+import com.devmate.ticket.entity.ActivityType;
 import com.devmate.ticket.entity.Ticket;
+import com.devmate.ticket.entity.TicketActivity;
 import com.devmate.ticket.entity.TicketStatus;
+import com.devmate.ticket.repository.TicketActivityRepository;
+import com.devmate.ticket.repository.TicketCommentRepository;
 import com.devmate.ticket.repository.TicketRepository;
 import com.devmate.user.entity.User;
 import com.devmate.user.repository.UserRepository;
@@ -18,6 +22,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.UUID;
 
+import com.devmate.ticket.dto.ActivityResponse;
+import com.devmate.ticket.dto.CommentRequest;
+import com.devmate.ticket.dto.CommentResponse;
+import com.devmate.ticket.entity.TicketComment;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -26,6 +35,8 @@ public class TicketService {
         private final TicketRepository ticketRepository;
         private final UserRepository userRepository;
         private final DepartmentRepository departmentRepository;
+        private final TicketCommentRepository ticketCommentRepository;
+        private final TicketActivityRepository ticketActivityRepository;
 
         public TicketResponse create(TicketRequest request, Authentication authentication) {
 
@@ -110,6 +121,7 @@ public class TicketService {
                 ticket.setAssignedTo(assignee);
 
                 Ticket saved = ticketRepository.save(ticket);
+                logActivity(saved, assignee, ActivityType.ASSIGNED, "Ticket assigned to " + assignee.getEmail());
 
                 return TicketResponse.builder()
                                 .id(saved.getId())
@@ -177,7 +189,77 @@ public class TicketService {
 
                 ticket.setStatus(newStatus);
                 Ticket saved = ticketRepository.save(ticket);
+                logActivity(saved, currentUser, ActivityType.STATUS_CHANGED,
+                                "Status changed from " + current + " to " + newStatus);
 
                 return mapToResponse(saved);
+        }
+
+        public CommentResponse addComment(UUID ticketId,
+                        CommentRequest request,
+                        Authentication authentication) {
+
+                Ticket ticket = ticketRepository.findById(ticketId)
+                                .orElseThrow(() -> new ResourceNotFoundException("Ticket not found"));
+
+                User user = userRepository.findByEmail(authentication.getName())
+                                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+                TicketComment comment = new TicketComment();
+                comment.setTicket(ticket);
+                comment.setUser(user);
+                comment.setComment(request.getComment());
+
+                TicketComment saved = ticketCommentRepository.saveAndFlush(comment);
+                logActivity(ticket, user, ActivityType.COMMENT_ADDED,
+                                "Comment added");
+
+                return CommentResponse.builder()
+                                .id(saved.getId())
+                                .comment(saved.getComment())
+                                .authorEmail(saved.getUser().getEmail())
+                                .createdAt(saved.getCreatedAt())
+                                .build();
+        }
+
+        @Transactional(readOnly = true)
+        public List<CommentResponse> getComments(UUID ticketId) {
+
+                ticketRepository.findById(ticketId)
+                                .orElseThrow(() -> new ResourceNotFoundException("Ticket not found"));
+
+                return ticketCommentRepository.findByTicketIdOrderByCreatedAtAsc(ticketId)
+                                .stream()
+                                .map(comment -> CommentResponse.builder()
+                                                .id(comment.getId())
+                                                .comment(comment.getComment())
+                                                .authorEmail(comment.getUser().getEmail())
+                                                .createdAt(comment.getCreatedAt())
+                                                .build())
+                                .collect(Collectors.toList());
+        }
+
+        private void logActivity(Ticket ticket, User user,
+                        ActivityType type, String description) {
+                TicketActivity activity = new TicketActivity();
+                activity.setTicket(ticket);
+                activity.setUser(user);
+                activity.setActivityType(type);
+                activity.setDescription(description);
+                ticketActivityRepository.save(activity);
+        }
+
+        @Transactional(readOnly = true)
+        public List<ActivityResponse> getActivities(UUID ticketId) {
+                return ticketActivityRepository.findByTicketIdOrderByCreatedAtAsc(ticketId)
+                                .stream()
+                                .map(a -> ActivityResponse.builder()
+                                                .id(a.getId())
+                                                .activityType(a.getActivityType())
+                                                .description(a.getDescription())
+                                                .performedBy(a.getUser().getEmail())
+                                                .createdAt(a.getCreatedAt())
+                                                .build())
+                                .toList();
         }
 }

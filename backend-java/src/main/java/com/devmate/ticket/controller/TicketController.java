@@ -19,6 +19,10 @@ import java.util.List;
 import org.springframework.web.bind.annotation.PathVariable;
 import java.util.UUID;
 import org.springframework.security.access.prepost.PreAuthorize;
+
+import com.devmate.ticket.dto.ActivityResponse;
+import com.devmate.ticket.dto.CommentRequest;
+import com.devmate.ticket.dto.CommentResponse;
 import com.devmate.ticket.dto.StatusUpdateRequest;
 
 @RestController
@@ -60,5 +64,25 @@ public class TicketController {
             Authentication authentication) {
         return ApiResponse.success("Ticket status updated successfully",
                 ticketService.updateStatus(ticketId, request.getStatus(), authentication));
+    }
+
+    @PostMapping("/{ticketId}/comments")
+    public ApiResponse<CommentResponse> addComment(@PathVariable UUID ticketId,
+            @Valid @RequestBody CommentRequest request,
+            Authentication authentication) {
+        return ApiResponse.success("Comment added successfully",
+                ticketService.addComment(ticketId, request, authentication));
+    }
+
+    @GetMapping("/{ticketId}/comments")
+    public ApiResponse<List<CommentResponse>> getComments(@PathVariable UUID ticketId) {
+        return ApiResponse.success("Comments fetched successfully",
+                ticketService.getComments(ticketId));
+    }
+
+    @GetMapping("/{ticketId}/activities")
+    public ApiResponse<List<ActivityResponse>> getActivities(@PathVariable UUID ticketId) {
+        return ApiResponse.success("Activities fetched successfully",
+                ticketService.getActivities(ticketId));
     }
 }
