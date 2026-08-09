@@ -26,6 +26,14 @@ import com.devmate.ticket.dto.ActivityResponse;
 import com.devmate.ticket.dto.CommentRequest;
 import com.devmate.ticket.dto.CommentResponse;
 import com.devmate.ticket.entity.TicketComment;
+import com.devmate.ticket.entity.TicketPriority;
+import com.devmate.ticket.dto.PagedResponse;
+import com.devmate.ticket.specification.TicketSpecification;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 
 @Service
 @RequiredArgsConstructor
@@ -261,5 +269,68 @@ public class TicketService {
                                                 .createdAt(a.getCreatedAt())
                                                 .build())
                                 .toList();
+        }
+
+        @Transactional(readOnly = true)
+        public List<TicketResponse> getAll(Authentication authentication) {
+
+                User currentUser = userRepository.findByEmail(authentication.getName())
+                                .orElseThrow(() -> new ResourceNotFoundException("Current user not found"));
+
+                String role = currentUser.getRole().getName().name();
+
+                List<Ticket> tickets;
+
+                if ("ADMIN".equals(role)) {
+                        tickets = ticketRepository.findAll();
+                } else {
+                        tickets = ticketRepository.findByCreatedByOrAssignedTo(currentUser, currentUser);
+                }
+
+                return tickets.stream()
+                                .map(this::mapToResponse)
+                                .toList();
+        }
+
+        @Transactional(readOnly = true)
+        public PagedResponse<TicketResponse> searchTickets(Authentication authentication,
+                        int page,
+                        int size,
+                        String sortBy,
+                        String direction,
+                        TicketStatus status,
+                        TicketPriority priority,
+                        String search) {
+
+                User currentUser = userRepository.findByEmail(authentication.getName())
+                                .orElseThrow(() -> new ResourceNotFoundException("Current user not found"));
+
+                Sort sort = direction.equalsIgnoreCase("desc")
+                                ? Sort.by(sortBy).descending()
+                                : Sort.by(sortBy).ascending();
+
+                Pageable pageable = PageRequest.of(page, size, sort);
+
+                Specification<Ticket> spec = Specification
+                                .where(TicketSpecification.hasStatus(status))
+                                .and(TicketSpecification.hasPriority(priority))
+                                .and(TicketSpecification.titleContains(search));
+
+                if (!currentUser.getRole().getName().name().equals("ADMIN")) {
+                        spec = spec.and((root, query, cb) -> cb.or(
+                                        cb.equal(root.get("createdBy"), currentUser),
+                                        cb.equal(root.get("assignedTo"), currentUser)));
+                }
+
+                Page<Ticket> result = ticketRepository.findAll(spec, pageable);
+
+                return PagedResponse.<TicketResponse>builder()
+                                .content(result.getContent().stream().map(this::mapToResponse).toList())
+                                .page(result.getNumber())
+                                .size(result.getSize())
+                                .totalElements(result.getTotalElements())
+                                .totalPages(result.getTotalPages())
+                                .last(result.isLast())
+                                .build();
         }
 }

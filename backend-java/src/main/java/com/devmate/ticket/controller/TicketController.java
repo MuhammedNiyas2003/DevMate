@@ -3,6 +3,8 @@ package com.devmate.ticket.controller;
 import com.devmate.common.response.ApiResponse;
 import com.devmate.ticket.dto.TicketRequest;
 import com.devmate.ticket.dto.TicketResponse;
+import com.devmate.ticket.entity.TicketPriority;
+import com.devmate.ticket.entity.TicketStatus;
 import com.devmate.ticket.service.TicketService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
@@ -23,6 +26,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import com.devmate.ticket.dto.ActivityResponse;
 import com.devmate.ticket.dto.CommentRequest;
 import com.devmate.ticket.dto.CommentResponse;
+import com.devmate.ticket.dto.PagedResponse;
 import com.devmate.ticket.dto.StatusUpdateRequest;
 
 @RestController
@@ -41,8 +45,9 @@ public class TicketController {
     }
 
     @GetMapping
-    public ApiResponse<List<TicketResponse>> getAll() {
-        return ApiResponse.success("Tickets fetched successfully", ticketService.getAll());
+    public ApiResponse<List<TicketResponse>> getAll(Authentication authentication) {
+        return ApiResponse.success("Tickets fetched successfully",
+                ticketService.getAll(authentication));
     }
 
     @GetMapping("/{id}")
@@ -85,4 +90,20 @@ public class TicketController {
         return ApiResponse.success("Activities fetched successfully",
                 ticketService.getActivities(ticketId));
     }
+
+    @GetMapping("/search")
+public ApiResponse<PagedResponse<TicketResponse>> searchTickets(
+        Authentication authentication,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(defaultValue = "createdAt") String sortBy,
+        @RequestParam(defaultValue = "desc") String direction,
+        @RequestParam(required = false) TicketStatus status,
+        @RequestParam(required = false) TicketPriority priority,
+        @RequestParam(required = false) String search) {
+
+    return ApiResponse.success("Tickets fetched successfully",
+            ticketService.searchTickets(authentication, page, size, sortBy, direction,
+                    status, priority, search));
+}
 }
