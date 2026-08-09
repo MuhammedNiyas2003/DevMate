@@ -19,6 +19,7 @@ import java.util.List;
 import org.springframework.web.bind.annotation.PathVariable;
 import java.util.UUID;
 import org.springframework.security.access.prepost.PreAuthorize;
+import com.devmate.ticket.dto.StatusUpdateRequest;
 
 @RestController
 @RequestMapping("/api/tickets")
@@ -51,5 +52,13 @@ public class TicketController {
             @PathVariable UUID userId) {
         return ApiResponse.success("Ticket assigned successfully",
                 ticketService.assignTicket(ticketId, userId));
+    }
+
+    @PutMapping("/{ticketId}/status")
+    public ApiResponse<TicketResponse> updateStatus(@PathVariable UUID ticketId,
+            @Valid @RequestBody StatusUpdateRequest request,
+            Authentication authentication) {
+        return ApiResponse.success("Ticket status updated successfully",
+                ticketService.updateStatus(ticketId, request.getStatus(), authentication));
     }
 }
