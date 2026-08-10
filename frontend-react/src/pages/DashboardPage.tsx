@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import api from '../api/axios';
 import type { DashboardStats } from '../types/dashboard';
 import { useAuth } from '../auth/AuthContext';
+import { Link } from 'react-router-dom';
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -25,8 +26,11 @@ export default function DashboardPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">DevMate Dashboard</h1>
+      <div className="flex gap-2">
+        <Link to="/tickets" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+          View Tickets
+        </Link>
+
         <button onClick={logout} className="bg-red-500 text-white px-4 py-2 rounded-lg">
           Logout
         </button>
