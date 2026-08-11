@@ -19,3 +19,18 @@ export type PagedResponse<T> = {
   totalPages: number;
   last: boolean;
 }
+
+export type Comment = {
+  id: string;
+  comment: string;
+  authorEmail: string;
+  createdAt: string;
+};
+
+export type Activity = {
+  id: string;
+  activityType: string;
+  description: string;
+  performedBy: string;
+  createdAt: string;
+}

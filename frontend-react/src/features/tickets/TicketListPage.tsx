@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { fetchTickets } from './api';
 import type { PagedResponse, Ticket } from './types';
 import { useAuth } from '../../auth/AuthContext';
+import { Link } from 'react-router-dom';
 
 export default function TicketListPage() {
   const [tickets, setTickets] = useState<PagedResponse<Ticket> | null>(null);
@@ -105,7 +106,11 @@ export default function TicketListPage() {
 
               {tickets?.content.map((ticket) => (
                 <tr key={ticket.id} className="border-t hover:bg-gray-50">
-                  <td className="p-4 font-medium">{ticket.title}</td>
+                  <td className="p-4 font-medium">
+                    <Link to={`/tickets/${ticket.id}`} className="text-blue-600 hover:underline">
+                      {ticket.title}
+                    </Link>
+                  </td>
                   <td className="p-4">
                     <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
                       {ticket.status}

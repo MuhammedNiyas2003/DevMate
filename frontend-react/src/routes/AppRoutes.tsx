@@ -3,6 +3,7 @@ import LoginPage from '../pages/LoginPage';
 import DashboardPage from '../pages/DashboardPage';
 import ProtectedRoute from '../components/ProtectedRoute';
 import TicketListPage from '../features/tickets/TicketListPage';
+import TicketDetailPage from '../features/tickets/TicketDetailPage';
 
 export default function AppRoutes() {
   return (
@@ -13,6 +14,7 @@ export default function AppRoutes() {
         <Route path="/" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
 
         <Route path="/tickets" element={<ProtectedRoute><TicketListPage /></ProtectedRoute>} />
+        <Route path="/tickets/:id" element={<ProtectedRoute> <TicketDetailPage /></ProtectedRoute>}/>
       </Routes>
     </BrowserRouter>
   );

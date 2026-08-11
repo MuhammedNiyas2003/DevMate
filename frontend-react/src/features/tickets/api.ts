@@ -13,3 +13,23 @@ export async function fetchTickets(params: SearchParams) {
   const response = await api.get('/tickets/search', { params });
   return response.data.data as PagedResponse<Ticket>;
 }
+
+export async function fetchTicket(id: string) {
+  const response = await api.get(`/tickets/${id}`);
+  return response.data.data as Ticket;
+}
+
+export async function fetchComments(id: string) {
+  const response = await api.get(`/tickets/${id}/comments`);
+  return response.data.data as Comment[];
+}
+
+export async function addComment(id: string, comment: string) {
+  const response = await api.post(`/tickets/${id}/comments`, { comment });
+  return response.data.data as Comment;
+}
+
+export async function fetchActivities(id: string) {
+  const response = await api.get(`/tickets/${id}/activities`);
+  return response.data.data as Activity[];
+}
