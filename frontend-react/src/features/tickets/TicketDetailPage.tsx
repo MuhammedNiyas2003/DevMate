@@ -1,4 +1,5 @@
 import type { Activity } from './types';
+import TicketStatusUpdater from './components/TicketStatusUpdater';
 
 export default function ActivityTimeline({ activities = [] }: { activities?: Activity[] }) {
   return (

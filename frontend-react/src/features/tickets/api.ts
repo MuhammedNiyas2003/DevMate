@@ -33,3 +33,8 @@ export async function fetchActivities(id: string) {
   const response = await api.get(`/tickets/${id}/activities`);
   return response.data.data as Activity[];
 }
+
+export async function updateTicketStatus(id: string, status: string) {
+  const response = await api.put(`/tickets/${id}/status`, { status });
+  return response.data.data;
+}

@@ -37,9 +37,19 @@ export default function TicketListPage() {
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Tickets</h1>
-        <button onClick={logout} className="bg-red-500 text-white px-4 py-2 rounded-lg">
-          Logout
-        </button>
+
+        <div className="flex gap-2">
+          <Link
+            to="/tickets/new"
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+          >
+            + New Ticket
+          </Link>
+
+          <button onClick={logout} className="bg-red-500 text-white px-4 py-2 rounded-lg">
+            Logout
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
