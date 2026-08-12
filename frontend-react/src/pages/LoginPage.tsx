@@ -15,10 +15,21 @@ export default function LoginPage() {
     setError('');
 
     try {
-      const response = await api.post('/auth/login', { email, password });
-      login(response.data.data.token);
+      const response = await api.post('/auth/login', {
+        email,
+        password,
+      });
+
+      const token = response.data.data.token;
+
+      const me = await api.get('/auth/me', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      login(token, me.data.data.role);
       navigate('/');
-    } catch {
+    } catch (err) {
+      console.error(err);
       setError('Invalid email or password');
     }
   };
@@ -42,7 +53,10 @@ export default function LoginPage() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-        <button className="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700">
+        <button
+          type="submit"
+          className="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700"
+        >
           Login
         </button>
       </form>

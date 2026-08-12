@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { useAuth } from '../../auth/AuthContext';
+import AssignTicketCard from './components/AssignTicketCard';
 import {
   addComment,
   fetchActivities,
@@ -22,6 +24,8 @@ export default function TicketDetailPage() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const { role } = useAuth();
+
 
   const loadData = async () => {
     if (!id) return;
@@ -100,6 +104,9 @@ export default function TicketDetailPage() {
 
       {/* Status Actions */}
       <TicketStatusActions ticket={ticket} onUpdated={loadData} />
+      {role === 'ADMIN' && (
+        <AssignTicketCard ticket={ticket} onAssigned={loadData} />
+      )}
 
       {/* Comments + Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

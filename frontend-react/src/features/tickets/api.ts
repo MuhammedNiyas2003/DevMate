@@ -38,3 +38,10 @@ export async function updateTicketStatus(id: string, status: string) {
   const response = await api.put(`/tickets/${id}/status`, { status });
   return response.data.data;
 }
+
+export async function assignTicket(ticketId: string, userId: string) {
+  const response = await api.put(`/tickets/${ticketId}/assign`, null, {
+    params: { userId },
+  });
+  return response.data.data;
+}
